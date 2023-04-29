@@ -1,0 +1,12 @@
+{
+  "name": "node-flexdb",
+  "version": "0.0.1",
+  "description": "",
+  "author": "FlexDB Team <team@flexdb.co>",
+  "contributors": [
+    "Adam K Dean <adam@flexdb.co>"
+  ],
+  "license": "GPL-3.0",
+  "main": "lib/index.js",
+  "type": "module"
+}
