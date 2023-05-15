@@ -2,18 +2,24 @@
 // Use of this source code is governed by the GPL-3.0
 // license that can be found in the LICENSE file.
 
+import dotenv from 'dotenv'
 import { expect } from 'chai'
 import { FlexDB } from '../lib/index.js'
 
+dotenv.config()
+const FLEXDB_API_KEY = process.env.FLEXDB_API_KEY
+const FLEXDB_ACCOUNT_ID = process.env.FLEXDB_ACCOUNT_ID
+
 describe('FlexDB', function() {
   this.timeout(10000)
-  let flexdb, store, users
-  // const config = { endpoint: 'https://dev.flexdb.co/api/v1' } // { apiKey: '...' }
-  const config = { endpoint: 'http://localhost:8000/' }
+  let flexdb, store, users, flexdbAuth
+  // const endpoint = 'https://dev.flexdb.co/api/v1'
+  const endpoint = 'http://localhost:8000/'
 
   before(async function() {
-    flexdb = new FlexDB(config)
-    store = await flexdb.createStore({ name: 'test-store' })
+    flexdbAuth = new FlexDB({ endpoint, apiKey: FLEXDB_API_KEY })
+    flexdb = new FlexDB({ endpoint })
+    store = await flexdb.createStore('test-store')
     users = store.collection('users')
   })
 
@@ -21,6 +27,31 @@ describe('FlexDB', function() {
     expect(store.data).to.have.property('id')
     expect(store.data).to.have.property('name')
     expect(store.data.name).to.equal('test-store')
+  })
+
+  it('should create a new store and associate it with a user account', async function() {
+    const storeAuth = await flexdbAuth.createStore('test-store-auth')
+    expect(storeAuth.data).to.have.property('id')
+    expect(storeAuth.data).to.have.property('name')
+    expect(storeAuth.data).to.have.property('account')
+    expect(storeAuth.data.name).to.equal('test-store-auth')
+    expect(storeAuth.data.account).to.equal(FLEXDB_ACCOUNT_ID)
+  })
+
+  it('should get a user store by name', async function() {
+    const storeAuth = await flexdbAuth.getStore('test-store-auth')
+    expect(storeAuth.data).to.have.property('id')
+    expect(storeAuth.data).to.have.property('name')
+    expect(storeAuth.data).to.have.property('account')
+    expect(storeAuth.data.name).to.equal('test-store-auth')
+    expect(storeAuth.data.account).to.equal(FLEXDB_ACCOUNT_ID)
+  })
+
+  it('should delete a store beloning to the user account', async function() {
+    const storeAuth = await flexdbAuth.getStore('test-store-auth')
+    const response = await storeAuth.delete()
+    expect(response).to.have.property('success')
+    expect(response.success).to.equal(true)
   })
 
   it('should create a new document in the specified collection', async function() {
@@ -80,7 +111,7 @@ describe('FlexDB', function() {
   it('should throw an error when the server is not reachable', async function() {
     try {
       const unreachableFlexDB = new FlexDB({ endpoint: 'http://localhost:9999/' })
-      await unreachableFlexDB.createStore({ name: 'test-store' })
+      await unreachableFlexDB.createStore('test-store')
       throw new Error('Expected an error but did not get one')
     } catch (error) {
       expect(error).to.be.instanceOf(Error)
