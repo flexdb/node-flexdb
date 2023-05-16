@@ -47,11 +47,45 @@ describe('FlexDB', function() {
     expect(storeAuth.data.account).to.equal(FLEXDB_ACCOUNT_ID)
   })
 
-  it('should delete a store beloning to the user account', async function() {
+  it('should return null if the store does not exist', async function() {
+    const storeAuth = await flexdbAuth.getStore('test-store-auth-2')
+    expect(storeAuth).to.equal(null)
+  })
+
+  it('should throw an error the store name is already in use', async function() {
+    try {
+      await flexdbAuth.createStore('test-store-auth')
+      throw new Error('Expected an error but did not get one')
+    } catch (error) {
+      expect(error).to.be.instanceOf(Error)
+      expect(error).to.have.property('response')
+      expect(error.response).to.have.property('status')
+      expect(error.response).to.have.property('statusText')
+      expect(error.response.status).to.equal(409)
+      expect(error.response.statusText).to.equal('Conflict')
+    }
+  })
+
+  it('should delete a store belonging to the user account', async function() {
     const storeAuth = await flexdbAuth.getStore('test-store-auth')
     const response = await storeAuth.delete()
     expect(response).to.have.property('success')
     expect(response.success).to.equal(true)
+  })
+
+  it('should return a store when ensuring it exists and it does', async function() {
+    const store = await flexdb.ensureStoreExists('test-store')
+    expect(store.data).to.have.property('id')
+    expect(store.data).to.have.property('name')
+    expect(store.data.name).to.equal('test-store')
+  })
+
+  it('should return a store when ensuring it exists and it does not', async function() {
+    const store = await flexdb.ensureStoreExists('test-store-new-1')
+    expect(store.data).to.have.property('id')
+    expect(store.data).to.have.property('name')
+    expect(store.data.name).to.equal('test-store-new-1')
+    await store.delete()
   })
 
   it('should create a new document in the specified collection', async function() {
