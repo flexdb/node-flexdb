@@ -10,7 +10,7 @@ dotenv.config()
 const FLEXDB_API_KEY = process.env.FLEXDB_API_KEY
 const FLEXDB_ACCOUNT_ID = process.env.FLEXDB_ACCOUNT_ID
 
-describe('FlexDB', function() {
+describe('node-flexdb', function() {
   this.timeout(10000)
   let flexdb, store, users, flexdbAuth
   // const endpoint = 'https://dev.flexdb.co/api/v1'
@@ -98,10 +98,23 @@ describe('FlexDB', function() {
     expect(user).to.have.property('id')
   })
 
-  it('should get all documents in the specified collection', async function() {
-    const allUsers = await users.getAll()
-    expect(allUsers).to.be.an('array')
-    expect(allUsers.length).to.be.gte(2)
+  it('should get many documents in the specified collection', async function() {
+    for (let i = 0; i < 18; i++) {
+      const user = await users.create({ name: `User ${i}` })
+    }
+    const usersPage1 = await users.getMany({ page: 1, limit: 5 })
+    expect(usersPage1).to.be.an('object')
+    expect(usersPage1).to.have.property('metadata')
+    expect(usersPage1).to.have.property('documents')
+    expect(usersPage1.documents).to.be.an('array')
+    expect(usersPage1.documents.length).to.equal(5)
+    expect(usersPage1.metadata).to.be.an('object')
+    expect(usersPage1.metadata).to.have.property('page')
+    expect(usersPage1.metadata).to.have.property('limit')
+    expect(usersPage1.metadata).to.have.property('total')
+    expect(usersPage1.metadata.page).to.equal(1)
+    expect(usersPage1.metadata.limit).to.equal(5)
+    expect(usersPage1.metadata.total).to.equal(20)
   })
 
   it('should get a document by id in the specified collection', async function() {
