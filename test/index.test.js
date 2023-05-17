@@ -10,7 +10,7 @@ dotenv.config()
 const FLEXDB_API_KEY = process.env.FLEXDB_API_KEY
 const FLEXDB_ACCOUNT_ID = process.env.FLEXDB_ACCOUNT_ID
 
-describe('node-flexdb', function() {
+describe('flexdb', function() {
   this.timeout(10000)
   let flexdb, store, users, flexdbAuth
   // const endpoint = 'https://dev.flexdb.co/api/v1'
