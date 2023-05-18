@@ -1,4 +1,4 @@
-# FlexDB
+# FlexDB (Node.js)
 
 FlexDB is a flexible, free-to-use database service that allows for instant and seamless integration through its REST API. This library, `flexdb`, provides an easy-to-use wrapper around the [FlexDB](https://flexdb.co) REST API.
 
